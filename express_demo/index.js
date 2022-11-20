@@ -18,6 +18,15 @@ app.get("/api/courses", (req, res) =>{
     res.send([1,2,3]);
 })
 
+//searching course
+app.get("/api/courses/:id", (req, res) =>{
+    const course = courses.find(c => c.id === parseInt(req.params.id));
+    if(!course){
+        res.status(404).send("The course with requested id could not be found");
+    }
+    res.send(course);
+})
+
 app.post("/api/courses", (req, res) =>{
     const schema = {
         name: Joi.string().min(3).required()
@@ -35,6 +44,31 @@ app.post("/api/courses", (req, res) =>{
         name: req.body.name
     };
     courses.push(course);
+    res.send(course);
+})
+
+//updating course
+app.put("/api/courses/:id", (req, res) =>{
+    //search, if not found, return 404
+    const course = courses.find(c => c.id === parseInt(req.params.id));
+    if(!course){
+        res.status(404).send("The course with requested id could not be found");
+    }
+
+
+    //valdiation check of update request
+    const schema = {
+        name: Joi.string().min(3).required()
+    }
+
+    const result = Joi.validate(req.body, schema);
+    if(result.error){
+        res.status(400).send(result.error.details[0].message); //[0] dewate just 1st error ta dekhabe, we may also choose to print all the error messages as well
+        return;
+    }
+
+    //update course and return updated course
+    course.name = req.body.name;
     res.send(course);
 })
 
